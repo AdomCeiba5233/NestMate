@@ -82,9 +82,14 @@ export default function LoginScreen({ navigation }: Props) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.brand}>
-            <Text style={styles.appName}>NestMate</Text>
-            <Text style={styles.tagline}>Find your people, find your place.</Text>
+          <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="arrow-back" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Log In</Text>
           </View>
 
           <View style={styles.form}>
@@ -122,14 +127,41 @@ export default function LoginScreen({ navigation }: Props) {
               }
             />
 
+            <TouchableOpacity
+              style={styles.forgotPassword}
+              onPress={() => navigation.navigate('ForgotPassword')}
+            >
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+
             {formError ? <Text style={styles.formError}>{formError}</Text> : null}
 
             <AppButton title="Log In" onPress={handleLogin} loading={loading} />
 
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <AppButton
+              title="Continue with Google"
+              variant="outline"
+              onPress={() => {}}
+              icon={<Ionicons name="logo-google" size={18} color={colors.text} />}
+            />
+            <View style={styles.spacer} />
+            <AppButton
+              title="Continue with Apple"
+              variant="outline"
+              onPress={() => {}}
+              icon={<Ionicons name="logo-apple" size={18} color={colors.text} />}
+            />
+
             <View style={styles.signUpRow}>
               <Text style={styles.signUpText}>Don&apos;t have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-                <Text style={styles.signUpLink}>Sign Up</Text>
+                <Text style={styles.signUpLink}>Sign up</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -149,33 +181,55 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xl,
+    paddingVertical: spacing.lg,
   },
-  brand: {
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.xxl,
+    marginBottom: spacing.xl,
   },
-  appName: {
-    fontSize: typography.h1,
+  headerTitle: {
+    fontSize: typography.h2,
     fontWeight: typography.weightBold,
-    color: colors.primary,
-  },
-  tagline: {
-    marginTop: spacing.xs,
-    fontSize: typography.body,
-    color: colors.textMuted,
-    textAlign: 'center',
+    color: colors.text,
+    marginLeft: spacing.md,
   },
   form: {
     width: '100%',
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: spacing.lg,
+  },
+  forgotPasswordText: {
+    fontSize: typography.caption,
+    color: colors.primary,
+    fontWeight: typography.weightMedium,
   },
   formError: {
     color: colors.error,
     fontSize: typography.caption,
     marginBottom: spacing.md,
     textAlign: 'center',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.lg,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    marginHorizontal: spacing.md,
+    fontSize: typography.caption,
+    color: colors.textMuted,
+  },
+  spacer: {
+    height: spacing.md,
   },
   signUpRow: {
     flexDirection: 'row',
