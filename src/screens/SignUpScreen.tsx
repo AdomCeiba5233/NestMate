@@ -80,7 +80,10 @@ export default function SignUpScreen({ navigation }: Props) {
     await new Promise((resolve) => setTimeout(resolve, 800));
     setLoading(false);
 
-    navigation.reset({ index: 0, routes: [{ name: 'Home', params: { email: email.trim() } }] });
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'OnboardingAboutYou', params: { data: { email: email.trim() } } }],
+    });
   }
 
   return (

@@ -30,6 +30,13 @@
           "resizeMode": "contain",
           "backgroundColor": "#FFFFFF"
         }
+      ],
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "NestMate uses your photos to build your profile and help roommates get to know you."
+        }
       ]
     ]
   }
