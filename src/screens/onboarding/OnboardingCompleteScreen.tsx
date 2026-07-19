@@ -4,8 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import AppButton from '../../components/AppButton';
+import IconCircle from '../../components/IconCircle';
 import { colors, spacing, typography } from '../../theme';
 import { RootStackParamList } from '../../navigation/types';
+import { updateProfile } from '../../services/profileService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OnboardingComplete'>;
 
@@ -19,6 +21,16 @@ export default function OnboardingCompleteScreen({ navigation, route }: Props) {
       duration: 1400,
       useNativeDriver: false,
     }).start();
+
+    updateProfile({
+      fullName: data.fullName ?? '',
+      dateOfBirth: data.dateOfBirth,
+      bio: data.bio,
+      gender: data.gender,
+      schoolLevel: data.schoolLevel,
+      avatarUri: data.avatarUri,
+      photos: data.photos,
+    });
   }, [progress]);
 
   const progressWidth = progress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
@@ -26,9 +38,9 @@ export default function OnboardingCompleteScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.content}>
-        <View style={styles.iconCircle}>
+        <IconCircle size={96} style={styles.iconCircle}>
           <Ionicons name="checkmark" size={40} color={colors.primary} />
-        </View>
+        </IconCircle>
 
         <Text style={styles.title}>You&apos;re all set!</Text>
         <Text style={styles.subtitle}>We&apos;re finding the best roommates for you.</Text>
@@ -40,7 +52,12 @@ export default function OnboardingCompleteScreen({ navigation, route }: Props) {
         <View style={styles.form}>
           <AppButton
             title="Go to Home"
-            onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Home', params: { email: data.email } }] })}
+            onPress={() =>
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Home', params: { email: data.email, name: data.fullName } }],
+              })
+            }
           />
         </View>
       </View>
@@ -60,12 +77,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   iconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: spacing.lg,
   },
   title: {

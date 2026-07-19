@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import AppButton from '../../components/AppButton';
 import RadioGroup from '../../components/RadioGroup';
 import OnboardingProgressBar from '../../components/OnboardingProgressBar';
+import ScreenHeader from '../../components/ScreenHeader';
 import { colors, spacing, typography } from '../../theme';
 import { OnboardingLifestyle, RootStackParamList } from '../../navigation/types';
 
@@ -90,12 +90,7 @@ export default function LifestyleFitScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Lifestyle Fit</Text>
-        </View>
+        <ScreenHeader title="Lifestyle Fit" onBack={handleBack} />
 
         <OnboardingProgressBar totalSteps={7} currentStep={3 + pageIndex} />
 
@@ -134,17 +129,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  headerTitle: {
-    fontSize: typography.h2,
-    fontWeight: typography.weightBold,
-    color: colors.text,
-    marginLeft: spacing.md,
   },
   pageIndicator: {
     fontSize: typography.caption,

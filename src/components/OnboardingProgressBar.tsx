@@ -1,12 +1,15 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { colors } from '../theme';
+import { colors, moderateScale } from '../theme';
 
 interface OnboardingProgressBarProps {
   totalSteps: number;
   currentStep: number;
 }
+
+const DOT_SIZE = moderateScale(10, 0.3);
+const LINE_WIDTH = moderateScale(24, 0.3);
 
 export default function OnboardingProgressBar({
   totalSteps,
@@ -33,16 +36,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: DOT_SIZE,
+    height: DOT_SIZE,
+    borderRadius: DOT_SIZE / 2,
     backgroundColor: colors.border,
   },
   dotActive: {
     backgroundColor: colors.primary,
   },
   line: {
-    width: 24,
+    width: LINE_WIDTH,
     height: 2,
     backgroundColor: colors.border,
   },

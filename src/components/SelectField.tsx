@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Modal, Pressable, StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors, spacing, typography } from '../theme';
 
 interface SelectFieldProps {
-  label: string;
+  label?: string;
   placeholder: string;
   value?: string;
   options: string[];
   onChange: (value: string) => void;
   error?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 export default function SelectField({
@@ -20,18 +21,21 @@ export default function SelectField({
   options,
   onChange,
   error,
+  style,
 }: SelectFieldProps) {
   const [visible, setVisible] = useState(false);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+    <View style={[styles.container, style]}>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
       <TouchableOpacity
         style={[styles.inputRow, error ? styles.inputRowError : null]}
         onPress={() => setVisible(true)}
         activeOpacity={0.8}
       >
-        <Text style={value ? styles.value : styles.placeholder}>{value ?? placeholder}</Text>
+        <Text style={value ? styles.value : styles.placeholder} numberOfLines={1}>
+          {value ?? placeholder}
+        </Text>
         <Ionicons name="chevron-down" size={18} color={colors.textMuted} />
       </TouchableOpacity>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -39,7 +43,7 @@ export default function SelectField({
       <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
         <Pressable style={styles.overlay} onPress={() => setVisible(false)}>
           <Pressable style={styles.sheet}>
-            <Text style={styles.sheetTitle}>{label}</Text>
+            <Text style={styles.sheetTitle}>{label ?? placeholder}</Text>
             <FlatList
               data={options}
               keyExtractor={(item) => item}

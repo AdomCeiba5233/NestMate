@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, spacing, typography } from '../theme';
+import { colors, moderateScale, spacing, typography } from '../theme';
 import { RootStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
@@ -36,13 +36,13 @@ export default function SplashScreen({ navigation }: Props) {
       <View style={styles.content}>
         <Image
           source={require('../../assets/logo.png')}
-          style={styles.logo}
+          style={[styles.logo, { width: moderateScale(120), height: moderateScale(120) }]}
           resizeMode="contain"
         />
         <Text style={styles.appName}>NestMate</Text>
         <Text style={styles.tagline}>Find your perfect roommates.</Text>
 
-        <View style={styles.progressTrack}>
+        <View style={[styles.progressTrack, { width: moderateScale(120) }]}>
           <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
         </View>
       </View>
@@ -62,8 +62,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   logo: {
-    width: 120,
-    height: 120,
     marginBottom: spacing.lg,
   },
   appName: {
@@ -78,7 +76,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   progressTrack: {
-    width: 120,
     height: 6,
     borderRadius: 3,
     backgroundColor: colors.border,

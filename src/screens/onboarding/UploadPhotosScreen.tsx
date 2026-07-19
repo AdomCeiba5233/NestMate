@@ -6,13 +6,14 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import AppButton from '../../components/AppButton';
 import OnboardingProgressBar from '../../components/OnboardingProgressBar';
+import ScreenHeader from '../../components/ScreenHeader';
 import { colors, spacing, typography } from '../../theme';
 import { RootStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OnboardingPhotos'>;
 
-const MIN_PHOTOS = 2;
-const MAX_PHOTOS = 4;
+const MIN_PHOTOS = 1;
+const MAX_PHOTOS = 2;
 
 export default function UploadPhotosScreen({ navigation, route }: Props) {
   const { data } = route.params;
@@ -66,16 +67,13 @@ export default function UploadPhotosScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Upload Photos</Text>
-        </View>
+        <ScreenHeader title="Upload Photos" onBack={() => navigation.goBack()} />
 
         <OnboardingProgressBar totalSteps={7} currentStep={1} />
 
-        <Text style={styles.subtitle}>Add at least {MIN_PHOTOS} photos</Text>
+        <Text style={styles.subtitle}>
+          Add at least {MIN_PHOTOS} photo{MIN_PHOTOS === 1 ? '' : 's'}
+        </Text>
 
         <View style={styles.grid}>
           {photos.map((uri, index) => (
@@ -122,17 +120,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  headerTitle: {
-    fontSize: typography.h2,
-    fontWeight: typography.weightBold,
-    color: colors.text,
-    marginLeft: spacing.md,
   },
   subtitle: {
     fontSize: typography.body,

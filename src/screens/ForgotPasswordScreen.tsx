@@ -14,6 +14,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import AppTextInput from '../components/AppTextInput';
 import AppButton from '../components/AppButton';
+import IconCircle from '../components/IconCircle';
+import ScreenHeader from '../components/ScreenHeader';
 import { colors, spacing, typography } from '../theme';
 import { RootStackParamList } from '../navigation/types';
 
@@ -56,11 +58,11 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.title}>Forgot Password</Text>
+          <ScreenHeader title="Forgot Password" />
 
-          <View style={styles.iconCircle}>
+          <IconCircle size={96} style={styles.iconCircle}>
             <Ionicons name="mail-outline" size={40} color={colors.text} />
-          </View>
+          </IconCircle>
 
           <Text style={styles.subtitle}>
             Enter your email and we&apos;ll send you a link to reset your password.
@@ -104,19 +106,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xl,
   },
-  title: {
-    fontSize: typography.h2,
-    fontWeight: typography.weightBold,
-    color: colors.text,
-    marginBottom: spacing.xl,
-  },
   iconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: spacing.lg,
   },
   subtitle: {

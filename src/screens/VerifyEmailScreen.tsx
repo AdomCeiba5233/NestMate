@@ -1,20 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
-  NativeSyntheticEvent,
   Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TextInputKeyPressEventData,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import AppButton from '../components/AppButton';
+import CodeInput from '../components/CodeInput';
+import ScreenHeader from '../components/ScreenHeader';
 import { colors, spacing, typography } from '../theme';
 import { RootStackParamList } from '../navigation/types';
 
@@ -25,11 +24,11 @@ const RESEND_COOLDOWN_SECONDS = 30;
 
 export default function VerifyEmailScreen({ navigation, route }: Props) {
   const { email } = route.params;
-  const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(''));
+  const [code, setCode] = useState('');
   const [error, setError] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(RESEND_COOLDOWN_SECONDS);
-  const inputRefs = useRef<Array<TextInput | null>>([]);
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     if (cooldown === 0) {
@@ -41,41 +40,17 @@ export default function VerifyEmailScreen({ navigation, route }: Props) {
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  function handleChangeDigit(text: string, index: number) {
-    const char = text.slice(-1);
-    setDigits((prev) => {
-      const next = [...prev];
-      next[index] = char;
-      return next;
-    });
-
-    if (char && index < CODE_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  }
-
-  function handleKeyPress(
-    event: NativeSyntheticEvent<TextInputKeyPressEventData>,
-    index: number,
-  ) {
-    if (event.nativeEvent.key === 'Backspace' && !digits[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  }
-
   function handleResend() {
     if (cooldown > 0) {
       return;
     }
-    setDigits(Array(CODE_LENGTH).fill(''));
+    setCode('');
     setError(undefined);
     setCooldown(RESEND_COOLDOWN_SECONDS);
-    inputRefs.current[0]?.focus();
+    setResetKey((prev) => prev + 1);
   }
 
   async function handleVerify() {
-    const code = digits.join('');
-
     if (code.length < CODE_LENGTH) {
       setError('Enter the full 6-digit code.');
       return;
@@ -99,25 +74,11 @@ export default function VerifyEmailScreen({ navigation, route }: Props) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.title}>Verify Your Email</Text>
+          <ScreenHeader title="Verify Your Email" />
           <Text style={styles.subtitle}>Enter the 6-digit code sent to{'\n'}{email}</Text>
 
           <View style={styles.codeRow}>
-            {digits.map((digit, index) => (
-              <TextInput
-                key={index}
-                ref={(ref) => {
-                  inputRefs.current[index] = ref;
-                }}
-                style={[styles.codeBox, digit ? styles.codeBoxFilled : null]}
-                value={digit}
-                onChangeText={(text) => handleChangeDigit(text, index)}
-                onKeyPress={(event) => handleKeyPress(event, index)}
-                keyboardType="number-pad"
-                maxLength={1}
-                textAlign="center"
-              />
-            ))}
+            <CodeInput key={resetKey} length={CODE_LENGTH} onChange={setCode} />
           </View>
 
           {error ? <Text style={styles.formError}>{error}</Text> : null}
@@ -165,12 +126,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xl,
   },
-  title: {
-    fontSize: typography.h2,
-    fontWeight: typography.weightBold,
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
   subtitle: {
     fontSize: typography.body,
     color: colors.textMuted,
@@ -178,22 +133,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   codeRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
     marginBottom: spacing.lg,
-  },
-  codeBox: {
-    width: 44,
-    height: 52,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    backgroundColor: colors.surface,
-    fontSize: typography.h2,
-    color: colors.text,
-  },
-  codeBoxFilled: {
-    borderColor: colors.primary,
   },
   formError: {
     color: colors.error,

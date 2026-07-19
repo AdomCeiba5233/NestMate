@@ -1,0 +1,61 @@
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+import { colors, spacing, typography } from '../theme';
+
+interface ListRowProps {
+  label: string;
+  onPress: () => void;
+  icon?: React.ComponentProps<typeof Ionicons>['name'];
+  destructive?: boolean;
+  showChevron?: boolean;
+  isLast?: boolean;
+}
+
+export default function ListRow({
+  label,
+  onPress,
+  icon,
+  destructive = false,
+  showChevron = true,
+  isLast = false,
+}: ListRowProps) {
+  return (
+    <TouchableOpacity
+      style={[styles.row, !isLast && styles.rowDivider]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      {icon ? (
+        <Ionicons name={icon} size={20} color={destructive ? colors.error : colors.textMuted} />
+      ) : null}
+      <Text style={[styles.label, destructive && styles.labelDestructive]}>{label}</Text>
+      {showChevron && !destructive ? (
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+      ) : null}
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  rowDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  label: {
+    flex: 1,
+    fontSize: typography.body,
+    color: colors.text,
+  },
+  labelDestructive: {
+    color: colors.error,
+    fontWeight: typography.weightBold,
+  },
+});

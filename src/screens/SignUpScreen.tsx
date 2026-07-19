@@ -14,6 +14,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import AppTextInput from '../components/AppTextInput';
 import AppButton from '../components/AppButton';
+import ScreenHeader from '../components/ScreenHeader';
 import { colors, spacing, typography } from '../theme';
 import { RootStackParamList } from '../navigation/types';
 
@@ -22,7 +23,6 @@ type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface FormErrors {
-  fullName?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
@@ -30,7 +30,6 @@ interface FormErrors {
 }
 
 export default function SignUpScreen({ navigation }: Props) {
-  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -42,10 +41,6 @@ export default function SignUpScreen({ navigation }: Props) {
 
   function validate(): boolean {
     const nextErrors: FormErrors = {};
-
-    if (!fullName.trim()) {
-      nextErrors.fullName = 'Full name is required.';
-    }
 
     if (!email.trim()) {
       nextErrors.email = 'Email is required.';
@@ -80,10 +75,7 @@ export default function SignUpScreen({ navigation }: Props) {
     await new Promise((resolve) => setTimeout(resolve, 800));
     setLoading(false);
 
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'OnboardingAboutYou', params: { data: { email: email.trim() } } }],
-    });
+    navigation.navigate('OnboardingAboutYou', { data: { email: email.trim() } });
   }
 
   return (
@@ -96,26 +88,9 @@ export default function SignUpScreen({ navigation }: Props) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Ionicons name="arrow-back" size={24} color={colors.text} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Create Account</Text>
-          </View>
+          <ScreenHeader title="Create Account" onBack={() => navigation.goBack()} />
 
           <View style={styles.form}>
-            <AppTextInput
-              label="Full Name"
-              placeholder="Your full name"
-              value={fullName}
-              onChangeText={setFullName}
-              error={errors.fullName}
-              autoCapitalize="words"
-            />
-
             <AppTextInput
               label="Email"
               placeholder="you@example.com"
@@ -216,17 +191,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  headerTitle: {
-    fontSize: typography.h2,
-    fontWeight: typography.weightBold,
-    color: colors.text,
-    marginLeft: spacing.md,
   },
   form: {
     width: '100%',
