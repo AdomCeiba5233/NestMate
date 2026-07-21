@@ -1,98 +1,97 @@
 import { AllocationResult, RoommateCandidate, RoommateGroupMember } from '../types/roommate';
 import { CURRENT_ACADEMIC_YEAR } from './hostelService';
+import { api } from './apiClient';
 
-const MOCK_NETWORK_DELAY_MS = 500;
-const ALLOCATION_PROCESSING_MS = 4000;
+/**
+ * HYBRID real implementation.
+ * - Candidates come from the REAL backend matching engine (GET /api/matches):
+ *   live compatibility scores from the weighted algorithm.
+ * - Group membership (likes) stays session-local: the backend's booking model
+ *   works through holds/invites rather than pre-booking groups, so the group
+ *   screen keeps its UX with real people in it. Documented in the report.
+ * - Allocation status is REAL: "assigned" the moment the user's bed is
+ *   CONFIRMED in the backend (i.e. after code verification).
+ */
 
-function delay<T>(value: T): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), MOCK_NETWORK_DELAY_MS));
+interface BackendMatch {
+  userId: number;
+  fullName: string;
+  score: number;
+  profile?: {
+    city?: string;
+    sleepSchedule?: string;
+    seekingType?: string;
+  };
+  breakdown?: {
+    sleep?: string;
+    cleanliness?: string;
+    noise?: string;
+    budget?: string;
+  };
 }
+
+interface BackendHousing {
+  hasRoom: boolean;
+  hostelName?: string;
+  roomNumber?: string;
+  floor?: string;
+}
+
+function traitsFrom(m: BackendMatch): string[] {
+  const traits: string[] = [];
+  if (m.breakdown?.sleep === 'ALIGNED') traits.push('Sleep match');
+  if (m.breakdown?.cleanliness === 'ALIGNED') traits.push('Tidiness match');
+  if (m.breakdown?.noise === 'ALIGNED') traits.push('Noise fit');
+  if (m.breakdown?.budget === 'ALIGNED') traits.push('Budget fit');
+  if (m.profile?.sleepSchedule === 'NIGHT_OWL') traits.push('Night Owl');
+  if (m.profile?.sleepSchedule === 'EARLY_BIRD') traits.push('Early Bird');
+  return traits.length ? traits : ['NESTMATE user'];
+}
+
+function toCandidate(m: BackendMatch): RoommateCandidate {
+  return {
+    id: String(m.userId),
+    name: m.fullName,
+    matchPercent: Math.round(m.score),
+    program: m.profile?.city ? `Based in ${m.profile.city}` : 'NESTMATE user',
+    level: m.profile?.seekingType === 'OFFERING_ROOM' ? 'Offering a room' : 'Seeking a room',
+    traits: traitsFrom(m),
+  };
+}
+
+// session state: which candidates were already swiped, per hostel+roomType
+const seenIds = new Map<string, Set<string>>();
+const members = new Map<string, RoommateGroupMember[]>();
 
 function keyFor(hostelId: string, roomTypeId: string): string {
   return `${hostelId}:${roomTypeId}`;
 }
-
-interface GroupState {
-  members: RoommateGroupMember[];
-  candidateQueue: RoommateCandidate[];
+function seenFor(key: string): Set<string> {
+  if (!seenIds.has(key)) seenIds.set(key, new Set());
+  return seenIds.get(key)!;
+}
+function membersFor(key: string): RoommateGroupMember[] {
+  if (!members.has(key)) members.set(key, []);
+  return members.get(key)!;
 }
 
-const GENERIC_CANDIDATE_POOL: RoommateCandidate[] = [
-  {
-    id: 'cand-nana',
-    name: 'Nana Yeboah',
-    matchPercent: 88,
-    program: 'Business Admin',
-    level: 'Level 200',
-    traits: ['Night Owl', 'Social', 'Pet Friendly'],
-  },
-  {
-    id: 'cand-kojo',
-    name: 'Kojo Antwi',
-    matchPercent: 79,
-    program: 'Mechanical Eng.',
-    level: 'Level 300',
-    traits: ['Quiet', 'Tidy'],
-  },
-  {
-    id: 'cand-akosua',
-    name: 'Akosua Boateng',
-    matchPercent: 90,
-    program: 'Nursing',
-    level: 'Level 100',
-    traits: ['Very Clean', 'Early Bird', 'Non-smoker'],
-  },
-  {
-    id: 'cand-yaw',
-    name: 'Yaw Darko',
-    matchPercent: 82,
-    program: 'Economics',
-    level: 'Level 400',
-    traits: ['Social', 'Guests OK'],
-  },
-];
-
-function seedState(hostelId: string, roomTypeId: string): GroupState {
-  if (hostelId === 'hostel-a' && roomTypeId === '4-in-a-room') {
-    return {
-      members: [
-        { id: 'abena-gyasi', name: 'Abena Gyasi', status: 'matched', matchPercent: 93 },
-        { id: 'efua-sarpong', name: 'Efua Sarpong', status: 'friend', friendCode: 'KB92' },
-      ],
-      candidateQueue: [
-        {
-          id: 'ama-mensah',
-          name: 'Ama Mensah',
-          matchPercent: 96,
-          program: 'Computer Science',
-          level: 'Level 300',
-          traits: ['Very Clean', 'Early Bird', 'Non-smoker'],
-        },
-        ...GENERIC_CANDIDATE_POOL,
-      ],
-    };
+async function fetchCandidates(): Promise<RoommateCandidate[]> {
+  try {
+    const matches = await api<BackendMatch[]>('/api/matches?limit=20');
+    return matches.map(toCandidate);
+  } catch (e) {
+    console.warn('fetchCandidates failed (profile created? logged in?):', e);
+    return [];
   }
-
-  return { members: [], candidateQueue: [...GENERIC_CANDIDATE_POOL] };
-}
-
-const groupStates = new Map<string, GroupState>();
-const allocationRequestedAt = new Map<string, number>();
-
-function getState(hostelId: string, roomTypeId: string): GroupState {
-  const key = keyFor(hostelId, roomTypeId);
-  if (!groupStates.has(key)) {
-    groupStates.set(key, seedState(hostelId, roomTypeId));
-  }
-  return groupStates.get(key)!;
 }
 
 export async function fetchNextCandidate(
   hostelId: string,
   roomTypeId: string,
 ): Promise<RoommateCandidate | null> {
-  const state = getState(hostelId, roomTypeId);
-  return delay(state.candidateQueue[0] ?? null);
+  const seen = seenFor(keyFor(hostelId, roomTypeId));
+  const candidates = await fetchCandidates();
+  return candidates.find((c) => !seen.has(c.id)) ?? null;
 }
 
 export async function respondToCandidate(
@@ -101,54 +100,55 @@ export async function respondToCandidate(
   candidateId: string,
   liked: boolean,
 ): Promise<{ success: boolean }> {
-  const state = getState(hostelId, roomTypeId);
-  const candidate = state.candidateQueue.find((item) => item.id === candidateId);
-  state.candidateQueue = state.candidateQueue.filter((item) => item.id !== candidateId);
+  const key = keyFor(hostelId, roomTypeId);
+  seenFor(key).add(candidateId);
 
-  if (liked && candidate) {
-    state.members = [
-      ...state.members,
-      {
+  if (liked) {
+    const candidates = await fetchCandidates();
+    const candidate = candidates.find((c) => c.id === candidateId);
+    if (candidate) {
+      membersFor(key).push({
         id: candidate.id,
         name: candidate.name,
         status: 'matched',
         matchPercent: candidate.matchPercent,
-      },
-    ];
+      });
+    }
   }
-
-  return delay({ success: true });
+  return { success: true };
 }
 
 export async function fetchRoommateGroupMembers(
   hostelId: string,
   roomTypeId: string,
 ): Promise<RoommateGroupMember[]> {
-  return delay([...getState(hostelId, roomTypeId).members]);
+  return [...membersFor(keyFor(hostelId, roomTypeId))];
 }
 
 export async function submitGroupForAllocation(
   hostelId: string,
   roomTypeId: string,
 ): Promise<{ success: boolean }> {
-  allocationRequestedAt.set(keyFor(hostelId, roomTypeId), Date.now());
-  return delay({ success: true });
+  // Allocation in the real system = hold a bed and pay (access code screen).
+  return { success: true };
 }
 
 export async function fetchAllocationStatus(
   hostelId: string,
   roomTypeId: string,
 ): Promise<AllocationResult> {
-  const requestedAt = allocationRequestedAt.get(keyFor(hostelId, roomTypeId));
-
-  if (requestedAt && Date.now() - requestedAt >= ALLOCATION_PROCESSING_MS) {
-    return delay({
-      status: 'assigned',
-      roomNumber: '204',
-      floor: 'Floor 2',
-      academicYear: CURRENT_ACADEMIC_YEAR,
-    });
+  try {
+    const housing = await api<BackendHousing>('/api/users/me/housing');
+    if (housing.hasRoom) {
+      return {
+        status: 'assigned',
+        roomNumber: housing.roomNumber,
+        floor: housing.floor,
+        academicYear: CURRENT_ACADEMIC_YEAR,
+      };
+    }
+  } catch (e) {
+    console.warn('fetchAllocationStatus failed:', e);
   }
-
-  return delay({ status: 'pending' });
+  return { status: 'pending' };
 }

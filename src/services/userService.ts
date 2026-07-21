@@ -1,11 +1,21 @@
 import { HousingStatus } from '../types/user';
+import { api } from './apiClient';
 
-const MOCK_NETWORK_DELAY_MS = 400;
+/** REAL implementation - asks the backend whether the user has a confirmed bed. */
 
-function delay<T>(value: T): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), MOCK_NETWORK_DELAY_MS));
+interface BackendHousing {
+  hasRoom: boolean;
+  hostelName?: string;
+  roomNumber?: string;
+  floor?: string;
 }
 
 export async function fetchHousingStatus(): Promise<HousingStatus> {
-  return delay({ hasRoom: false });
+  try {
+    const h = await api<BackendHousing>('/api/users/me/housing');
+    return { hasRoom: h.hasRoom, hostelName: h.hostelName, roomNumber: h.roomNumber };
+  } catch (e) {
+    console.warn('fetchHousingStatus failed (logged in?):', e);
+    return { hasRoom: false };
+  }
 }
