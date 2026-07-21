@@ -1,5 +1,5 @@
 import { UserProfile, UserProfileUpdate } from '../types/profile';
-
+import { api, ApiError } from './apiClient';
 const MOCK_NETWORK_DELAY_MS = 400;
 const MAX_PHOTOS = 4;
 const PERSONAL_INFO_FIELDS: Array<keyof UserProfile> = [
@@ -42,7 +42,7 @@ let mockProfile: UserProfile = {
   matchesCount: 3,
   interestsCount: 5,
   roomHoldCount: 1,
-import { api, ApiError } from './apiClient';
+
 
 /**
  * HYBRID real implementation.
