@@ -19,6 +19,9 @@ import VerificationScreen from '../screens/VerificationScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import HelpSupportScreen from '../screens/HelpSupportScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
+import PersonalInfoScreen from '../screens/PersonalInfoScreen';
+import LifestylePreferencesScreen from '../screens/LifestylePreferencesScreen';
+import PhotosScreen from '../screens/PhotosScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import PlaceholderScreen from '../screens/PlaceholderScreen';
 
@@ -44,6 +47,9 @@ export default function RootNavigator() {
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
+      <Stack.Screen name="LifestylePreferences" component={LifestylePreferencesScreen} />
+      <Stack.Screen name="Photos" component={PhotosScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="Placeholder" component={PlaceholderScreen} />
     </Stack.Navigator>

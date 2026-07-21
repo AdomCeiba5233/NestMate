@@ -46,6 +46,9 @@ export type RootStackParamList = {
   Settings: undefined;
   HelpSupport: undefined;
   EditProfile: undefined;
+  PersonalInfo: undefined;
+  LifestylePreferences: undefined;
+  Photos: undefined;
   Notifications: undefined;
   Placeholder: { title: string; description?: string };
 };
